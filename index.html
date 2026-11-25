@@ -158,7 +158,9 @@ function heart(g,x,y){const P=['.##...##.','#..#.#..#','#...#...#','#.......#','
 const bgc=()=>{const o=opt('bg');return o.kind==='mine'?['#fff','#fff','#fff','#fff']:o.c}, dark=()=>opt('bg').id==='night';
 const SQUARE={x:112,y:105,w:1000,h:1000}, WIDE={x:-420,y:270,w:1620,h:760}, TALL={x:107,y:-706,w:1010,h:2188},
 // 더데이비포 위젯용: BIG은 아래 36%를, SMALL은 위 26%와 아래 35%를 글자 자리로 비운다
-BIG={x:13,y:251,w:1195,h:1195}, SMALL={x:-310,y:-186,w:1840,h:1840};
+BIG={x:13,y:251,w:1195,h:1195}, SMALL={x:-310,y:-186,w:1840,h:1840},
+// 위 29%를 D-day와 시계 자리로 비운 위젯 그림
+WID={x:92,y:-10,w:1040,h:1040};
 function draw(c,win,withInfo=true){
   const g=c.getContext('2d'),k=c.width/win.w;g.setTransform(k,0,0,k,-win.x*k,-win.y*k);boxes=[];
   const L=win.x,R=win.x+win.w,T=win.y,B=win.y+win.h,o=opt('bg'),col=bgc();
@@ -203,7 +205,7 @@ function info(g,win){
 let queued=0;const render=()=>{if(!queued)queued=requestAnimationFrame(()=>{queued=0;draw($('#c'),SQUARE);const b=[...boxes].reverse().find(b=>b.id===sel);if(b&&!['tree','info','bubble'].includes(sel)){const g=$('#c').getContext('2d');g.setLineDash([10,8]);g.lineWidth=3;g.strokeStyle='#c93445';g.strokeRect(b.x-5,b.y-5,b.w+10,b.h+10);g.setLineDash([])}})};
 
 /* ---------- 크게 보기 ---------- */
-const alone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const APK='', alone=!!window.Android||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 function view(){const v=$('#view'),c=v.firstElementChild;v.hidden=false;const a=innerWidth/innerHeight,w=Math.max(1010,1250*a),h=w/a,k=devicePixelRatio||1;c.width=innerWidth*k;c.height=innerHeight*k;draw(c,{view:true,x:612-w/2,y:640-.62*h,w,h})}
 function edit(){$('#view').hidden=true;render()}
 const tick=()=>$('#view').hidden?render():view();
@@ -284,27 +286,27 @@ function copyCode(){const b=el('button',{type:'button',className:'main',textCont
 function scriptable(){return `// 아기 위젯 (Scriptable)
 const DUE = "${S.due}", SHOW = "${S.info}", INK = new Color("${dark()?'#fff3d6':'#c93445'}");
 const IMG = {
-square: \`${shot(SQUARE,720)}\`,
+square: \`${shot(WID,720)}\`,
 wide: \`${shot(WIDE,800)}\`};
 const family = config.widgetFamily || "large";
 const wide = family === "medium";
 const w = new ListWidget();
-w.setPadding(family === "large" ? 16 : 4, 0, 0, 0);
+w.setPadding({ small: 4, large: 14 }[family] || 0, 0, 0, 0);
 w.backgroundImage = Image.fromData(Data.fromBase64String(IMG[wide ? "wide" : "square"].replace(/\\s/g, "")));
 const now = new Date(), mid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 let box = w;
 if (wide) { const row = w.addStack(); row.centerAlignContent(); box = row.addStack(); box.layoutVertically(); box.size = new Size(118, 0); row.addSpacer(); }
-const z = family === "small" ? 0.55 : 1;
+const [big, sub] = { small: [26, 13], medium: [34, 18], large: [54, 26] }[family] || [54, 26];
 function line(add, size) {
   const r = box.addStack(); r.addSpacer(); const t = add(r); r.addSpacer();
-  t.font = Font.boldRoundedSystemFont(size * z); t.textColor = INK; t.lineLimit = 1; t.minimumScaleFactor = 0.5; t.centerAlignText();
+  t.font = Font.boldRoundedSystemFont(size); t.textColor = INK; t.lineLimit = 1; t.minimumScaleFactor = 0.5; t.centerAlignText();
 }
 if (SHOW === "dday" || SHOW === "both") {
   const [y, m, d] = DUE.split("-").map(Number), n = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
-  line(r => r.addText(isNaN(n) ? "D-?" : n > 0 ? "D-" + n : n === 0 ? "D-DAY" : "D+" + -n), 32);
+  line(r => r.addText(isNaN(n) ? "D-?" : n > 0 ? "D-" + n : n === 0 ? "D-DAY" : "D+" + -n), big);
 }
 // 시계는 자정부터 흐른 시간을 보여 준다. 0시대에는 분:초만 나온다
-if (SHOW === "clock" || SHOW === "both") line(r => { const t = r.addDate(mid); t.applyTimerStyle(); return t; }, 20);
+if (SHOW === "clock" || SHOW === "both") line(r => { const t = r.addDate(mid); t.applyTimerStyle(); return t; }, sub);
 w.addSpacer();
 w.refreshAfterDate = new Date(mid.getTime() + 864e5 + 5000);
 Script.setWidget(w);
@@ -326,17 +328,17 @@ async function save(w,name){ // 숫자는 휴대폰이 따로 보여 주므로 �
 function phone(){
   const li=(...k)=>el('li',{},...k),live=S.info!=='none',K=kwgt(),need=live&&S.info!=='clock'&&!S.due,open=$('#more')?.open,otherOpen=!!($('#other')?.open||window.claude||outShown),ios=os==='ios';
   const btn=(t,w,n)=>el('button',{type:'button',className:'main',textContent:t,onclick:()=>save(w,n)});
-  const show=el('button',{type:'button',className:'main',textContent:'완성! 크게 보기',onclick:()=>{if(['both','dday'].includes(S.info)&&!S.due){choose('info');$('#panel').scrollIntoView({block:'center'});$('#panel').append(el('p',{role:'alert',textContent:'아기 만나는 날을 먼저 넣어 주세요. D-day가 없어도 되면 시계만을 고르세요.'}));return}S.done=1;put('design',S);view()}}),pick=seg([['ios','아이폰'],['and','갤럭시·안드로이드']],os,v=>{os=v;phone()},'휴대폰');
+  const show=el('button',{type:'button',className:'main',textContent:'완성! 크게 보기',onclick:()=>{if(!ask())return;S.done=1;put('design',S);view()}}),pick=seg([['ios','아이폰'],['and','갤럭시·안드로이드']],os,v=>{os=v;phone()},'휴대폰');
   const top=[el('h2',{textContent:alone?'다 꾸몄나요?':'휴대폰에 넣기'})];
-  if(alone)top.push(el('p',{textContent:'다음부터는 아이콘을 누르면 꾸민 방과 오늘의 D-day, 시계가 바로 나와요.'}),el('div',{},show));
-  else if(!window.claude){
-    top.push(el('p',{},el('strong',{textContent:'다른 앱은 필요 없어요. '}),'홈 화면에 아이콘을 추가하고 누르면 D-day와 시계가 저절로 바뀌는 방이 열려요.'),pick);
-    if(/KAKAOTALK/i.test(navigator.userAgent))top.push(el('a',{className:'main',href:'kakaotalk://web/openExternal?url='+encodeURIComponent(location.href),textContent:'먼저 사파리·크롬으로 열기'}));
-    if(install)top.push(el('div',{},el('button',{type:'button',className:'main',textContent:'홈 화면에 추가',onclick:()=>{install.prompt();install=null}})));
-    top.push(ios?el('ol',{},li('사파리에서 이 주소를 열고 공유 버튼(네모에 위 화살표)을 눌러요.'),li('홈 화면에 추가 → 추가를 눌러요.'),li('홈 화면에 생긴 아이콘을 열어 꾸미고 ‘완성! 크게 보기’를 눌러요. 꾸미기는 아이콘을 연 다음에 해 주세요.')):el('ol',{},li(install?'위 버튼을 눌러 추가해요.':'크롬에서 이 주소를 열고 ⋮ → 홈 화면에 추가를 눌러요.'),li('홈 화면에 생긴 아이콘을 열어 꾸미고 ‘완성! 크게 보기’를 눌러요.')),el('div',{},show));
-  }else top.push(pick,el('div',{},show));
+  const kakao=/KAKAOTALK/i.test(navigator.userAgent)&&!window.claude?[el('a',{className:'main',href:'kakaotalk://web/openExternal?url='+encodeURIComponent(location.href),textContent:'먼저 사파리·크롬으로 열기'})]:[];
+  const ask=()=>{if(!['both','dday'].includes(S.info)||S.due)return true;choose('info');$('#panel').scrollIntoView({block:'center'});$('#panel').append(el('p',{role:'alert',textContent:'아기 만나는 날을 먼저 넣어 주세요.'}));return false};
+  const scr=()=>[el('h3',{textContent:'홈 화면 위젯'}),need?el('p',{},'먼저 ',el('button',{type:'button',className:'plain',textContent:'아기 만나는 날 정하기',onclick:ask})):el('ol',{},li('무료 앱 ',el('a',{href:'https://apps.apple.com/kr/app/scriptable/id1405459188',textContent:'Scriptable 받기'}),' (처음 한 번만)'),li('꾸민 다음 눌러요.',copyCode()),li(el('a',{href:'scriptable:///add',textContent:'Scriptable 새 스크립트 열기'}),'를 누르고, 빈 곳을 길게 눌러 붙여넣기 → Done'),li('홈 화면 길게 누르기 → 편집 → 위젯 추가 → Scriptable → 큰 크기'),li('놓은 위젯을 길게 눌러 위젯 편집 → Script에서 방금 만든 것 고르기')),el('p',{className:'hint',textContent:'그림, D-day, 시계 자리가 다 맞춰져 있어요. 따로 꾸밀 것이 없어요.'})];
+  const icon=()=>[el('h3',{textContent:'앱 없이 아이콘으로'}),el('p',{className:'hint',textContent:'아이콘을 누르면 꾸민 방과 D-day, 시계가 화면 가득 나와요.'}),...(install?[el('div',{},el('button',{type:'button',className:'main',textContent:'홈 화면에 추가',onclick:()=>{install.prompt();install=null}}))]:[]),el('ol',{},...(ios?[li('사파리에서 공유 버튼 → 홈 화면에 추가')]:install?[]:[li('크롬에서 ⋮ → 홈 화면에 추가')]),li('생긴 아이콘을 열어 꾸미고 ‘완성! 크게 보기’'))];
+  if(window.Android)top.push(el('p',{textContent:'버튼을 누르면 홈 화면에 위젯이 놓여요. D-day와 시계는 저절로 바뀌어요.'}),el('div',{},el('button',{type:'button',className:'main',textContent:'홈 화면에 위젯 놓기',onclick:()=>{if(!ask())return;const c=cv(800,800);draw(c,WID,false);render();Android.place(c.toDataURL('image/png').split(',')[1],S.due,S.info,dark()?'#fff3d6':'#c93445',bgc()[0])}})));
+  else if(alone)top.push(el('p',{textContent:'다음부터는 아이콘을 누르면 꾸민 방과 오늘의 D-day, 시계가 바로 나와요.'}),el('div',{},show));
+  else top.push(...kakao,pick,...(ios?scr():APK?[el('h3',{textContent:'홈 화면 위젯'}),el('ol',{},li(el('a',{className:'main',href:APK,textContent:'위젯 앱 받기 (무료)'})),li('받은 파일을 열어 설치해요. ‘출처를 알 수 없는 앱’ 안내가 나오면 허용을 눌러요.'),li('앱에서 꾸미고 ‘홈 화면에 위젯 놓기’를 눌러요.'))]:[]),...icon(),el('div',{},show));
   const kids=[
-    ...(alone?[pick]:[]),el('h3',{textContent:'D-day 위젯 (더데이비포 앱 필요)'}),
+    ...(alone&&!window.Android?[pick]:[]),el('h3',{textContent:'D-day 위젯 (더데이비포 앱 필요)'}),
     el('div',{className:'row'},btn('크게 저장','BIG','baby-widget-big.png'),btn('작게 저장','SMALL','baby-widget-small.png'),btn('가로 저장','WIDE','baby-widget-wide.png')),
     el('p',{className:'hint',textContent:'크게: 아래에 숫자만 / 작게: 위에 글자, 아래에 숫자 / 가로: 왼쪽에 숫자'})];
   if(outShown)kids.push(el('p',{},el('strong',{textContent:'그림을 길게 눌러 사진에 저장하세요.'})),el('button',{type:'button',className:'zoom','aria-label':'그림 크게 보기',onclick:()=>{$('#full').hidden=false;$('#full img').src=outShown}},el('img',{className:'out',src:outShown,alt:'저장할 그림'})),el('p',{},'길게 눌러도 저장이 안 되면 ',el('strong',{textContent:'그림을 한 번 눌러 크게 띄우고 화면을 캡처'}),'하세요. 사진 앱에서 그림만 남게 잘라 쓰면 돼요.'));
@@ -346,7 +348,6 @@ function phone(){
     el('ol',{},li(ios?'사진 앱에서 저장한 그림을 열고 공유 → 배경화면으로 지정을 눌러요.':'갤러리에서 저장한 그림을 열고 ⋮ → 배경화면으로 설정을 눌러요.')));
   const inner=[];
   if(need)inner.push(el('p',{},'먼저 ',el('button',{type:'button',className:'plain',textContent:'아기 만나는 날 정하기',onclick:()=>{choose('info');$('#due').focus()}})));
-  else if(ios)inner.push(el('ol',{},li('App Store에서 무료 앱 Scriptable을 받아요.'),li('아래 버튼을 누르고, Scriptable 오른쪽 위 + 를 눌러 붙여 넣은 뒤 Done을 눌러요. 그림도 코드에 들어 있어요.',copyCode()),li('홈 화면을 길게 눌러 Scriptable 위젯을 추가해요.'),li('놓은 위젯을 길게 눌러 위젯 편집 → Script에서 방금 만든 것을 골라요.')),el('p',{className:'hint',textContent:'D-day와 시계는 위젯이 그림 위에 새로 써서 자동으로 바뀌어요. 다시 꾸몄다면 코드를 새로 복사해 덮어 붙여 넣어요.'}));
   else{
     inner.push(el('div',{className:'row'},btn('정사각형 저장','SQUARE','baby-square.png'),btn('가로 저장','WIDE','baby-wide.png')));
     if(!live)inner.push(el('ol',{},li('홈 화면을 길게 누르고 위젯 → 갤러리를 골라요.'),li('저장한 그림을 선택해요.')));
@@ -357,7 +358,7 @@ function phone(){
       st.push(li('글자를 비어 있는 자리로 옮기고 저장해요.'));inner.push(el('ol',{},...st),el('p',{className:'hint',textContent:'숫자는 위젯이 그림 위에 새로 써서 자동으로 바뀌어요. 그래서 저장한 그림에는 숫자 자리가 비어 있어요.'}));
     }
   }
-  kids.push(el('details',{id:'more',open:!!open},el('summary',{textContent:'시계까지 한 칸에 넣기 (손이 더 가요)'}),el('div',{className:'inner'},...inner)));
+  if(!ios)kids.push(el('details',{id:'more',open:!!open},el('summary',{textContent:'시계까지 한 칸에 넣기 (손이 더 가요)'}),el('div',{className:'inner'},...inner)));
   $('#phone').replaceChildren(...top,el('details',{id:'other',open:otherOpen},el('summary',{textContent:'사진으로 저장하거나 다른 앱 위젯으로 쓰기'}),el('div',{className:'inner'},...kids)));
 }
 
