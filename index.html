@@ -68,7 +68,7 @@ const PAT=[['stripe','줄무늬'],['dot','물방울'],['check','체크']].map(([
 const DOLL=[sp('bear','곰돌이'),sp('bunny','토끼'),sp('cat','고양이'),sp('pinkbear','분홍 곰')], GIFT=[sp('gift','빨간 선물'),sp('giftpink','분홍 선물'),sp('giftgreen','초록 선물')];
 // a: 기준점 [x,y], v: 기준점이 그림의 위(0)/가운데(.5)/아래(1) 어디인지, m: 내 사진 기본 크기
 const SLOTS=[
-{id:'info',label:'D-day·시계'},
+{id:'info',label:'만나는 날'},
 {id:'bubble',label:'말풍선'},
 {id:'bg',label:'배경',opts:[['white','원래대로',['#fefefe','#fefefe','#fefefe','#e9c9b5']],['cream','크림',['#fff6e6','#fceed6','#f0d9b5','#d9b68c']],['pink','분홍',['#fde6ec','#fadbe3','#f3c6cf','#dd9fac']],['mint','민트',['#e6f5ee','#d9eee4','#e6d5b8','#a9cdbb']],['sky','하늘',['#e4f1fb','#d6e8f6','#ead9c0','#a5c4dc']],['night','밤',['#3c4468','#353c5e','#6b5348','#232846']]].map(([id,label,c])=>({id,label,kind:'bg',c,color:c[0]})),mine:1},
 {id:'wall',label:'벽 장식',a:[885,680],v:.5,m:190,opts:[none(),sp('window','눈 오는 창'),sp('wreath','리스'),sp('frame','액자'),sp('garland','가랜드',{dx:-265,dy:-245})],mine:1},
@@ -88,7 +88,7 @@ const SLOTS=[
 const slot=id=>SLOTS.find(s=>s.id===id), opt=id=>{const s=slot(id),k=S.pick[id];return k==='mine'&&mine[id]?{id:'mine',kind:'mine'}:s.opts.find(o=>o.id===k)||s.opts[0]};
 
 /* ---------- 상태 ---------- */
-let S={pick:{},adj:{},b1:'아기 기다리는 중',b2:'사랑해',info:'both',due:'',name:''}, sel='info', os=/iPhone|iPad|Mac/.test(navigator.userAgent)?'ios':'and';
+let S={pick:{},adj:{},b1:'아기 기다리는 중',b2:'사랑해',due:''}, sel='info', os=/iPhone|iPad|Mac/.test(navigator.userAgent)?'ios':'and';
 const mine={}, mineImg={}, src={}, cut={};
 const adj=id=>S.adj[id]||{x:0,y:0,s:1,r:0};
 
@@ -157,7 +157,7 @@ function bubble(g,cx,y,h,text,tail,size){
 function heart(g,x,y){const P=['.##...##.','#..#.#..#','#...#...#','#.......#','.#.....#.','..#...#..','...#.#...','....#....'];g.fillStyle='#f26b6f';P.forEach((r,j)=>[...r].forEach((c,i)=>c==='#'&&g.fillRect(x+i*6,y+j*6,6,6)))}
 const bgc=()=>{const o=opt('bg');return o.kind==='mine'?['#fff','#fff','#fff','#fff']:o.c}, dark=()=>opt('bg').id==='night';
 const SQUARE={x:112,y:105,w:1000,h:1000}, TALL={x:107,y:-706,w:1010,h:2188};
-function draw(c,win,withInfo=true){
+function draw(c,win){
   const g=c.getContext('2d'),k=c.width/win.w;g.setTransform(k,0,0,k,-win.x*k,-win.y*k);boxes=[];
   const L=win.x,R=win.x+win.w,T=win.y,B=win.y+win.h,o=opt('bg'),col=bgc();
   if(o.kind==='mine'){g.save();g.translate(L,T);cover(g,mineImg.bg,win.w,win.h);g.restore()}
@@ -187,15 +187,13 @@ function draw(c,win,withInfo=true){
   place(g,slot('hat'));place(g,slot('hand'));place(g,slot('floor'));
   heart(g,495,493);if(opt('wall').kind==='none')heart(g,900,668);
   bubble(g,560,294,94,S.b1,[585,617,622],50);bubble(g,940,404,94,S.b2,[868,902,862],50);
-  if(withInfo&&S.info!=='none')info(g,win);
+  info(g,win);
 }
 const ink=()=>dark()?'#fff3d6':'#c93445';
 function put(g,t,y,z){g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';g.font=`400 ${z}px "Jua","IBM Plex Sans KR","Malgun Gothic",sans-serif`;g.strokeStyle=opt('bg').kind==='mine'?'#fff':bgc()[0];g.lineWidth=z/6;g.strokeText(t,612,y);g.fillStyle=ink();g.fillText(t,612,y)}
-function info(g,win){
-  const two=S.info==='both',d=S.info!=='clock',t=S.info!=='dday',[dy,dz,ty,tz]=win.view?(two?[10,230,190,110]:[90,280,90,280]):(two?[172,104,250,62]:[205,104,205,104]);
-  if(d)put(g,ddayText(S.due),dy,dz);
-  if(t)put(g,clockText(),ty,tz);
-  boxes.push({id:'info',x:330,y:115,w:560,h:170});
+function info(g,win){ // D-day와 시계는 저절로 바뀌는 크게 보기에서만 쓴다
+  if(win.view){if(S.due)put(g,ddayText(S.due),10,230);put(g,clockText(),S.due?190:90,S.due?110:230)}
+  else if(S.due){put(g,meetText(),205,84);boxes.push({id:'info',x:250,y:150,w:720,h:110})}
 }
 // 배경화면은 멈춘 그림이라 줄어드는 숫자 대신 바뀌지 않는 날짜를 쓴다
 function meetText(){const[,m,d]=S.due.split('-').map(Number);return `${m}월 ${d}일에 ${ddayText(S.due).startsWith('D+')?'만났어요':'만나요'}`}
@@ -246,8 +244,7 @@ function field(label,input){return el('label',{},label,input)}
 function panel(){
   const s=slot(sel),P=$('#panel'),kids=[el('h2',{textContent:s.label})];
   if(sel==='info'){
-    kids.push(seg([['both','D-day와 시계'],['dday','D-day만'],['clock','시계만'],['none','빼기']],S.info,v=>{S.info=v;changed();panel()},'위쪽 글자'));
-    kids.push(field('아기 만나는 날',el('input',{id:'due',type:'date',value:S.due,onchange:e=>{S.due=e.target.value;changed()}})));
+    kids.push(field('아기 만나는 날',el('input',{id:'due',type:'date',value:S.due,onchange:e=>{S.due=e.target.value;changed()}})),el('p',{className:'hint',textContent:'날짜를 비우면 글자가 안 나와요.'}));
   }else if(sel==='bubble'){
     for(const[k,l]of[['b1','엄마 말풍선'],['b2','인형 말풍선']])kids.push(field(l,el('input',{id:k,type:'text',maxLength:k==='b1'?14:7,value:S[k],oninput:e=>{S[k]=e.target.value;changed()}})));
     kids.push(el('p',{className:'hint',textContent:(PUB?'태명으로 바꿔 보세요. ':'')+'비워 두면 말풍선이 사라져요.'}));
@@ -277,11 +274,8 @@ C.onpointerup=C.onpointercancel=()=>{if(drag){drag=null;changed()}};
 
 /* ---------- 휴대폰에 넣기 ---------- */
 let outShown=null;
-function ask(){if(!['both','dday'].includes(S.info)||S.due)return true;choose('info');$('#panel').scrollIntoView({block:'center'});$('#panel').append(el('p',{role:'alert',textContent:'아기 만나는 날을 먼저 넣어 주세요.'}));return false}
 async function save(){
-  if(!ask())return;
-  const c=cv(1200,1200*TALL.h/TALL.w),name='baby-wallpaper.png';draw(c,TALL,false);
-  if(S.due&&['both','dday'].includes(S.info))put(c.getContext('2d'),meetText(),205,84);
+  const c=cv(1200,1200*TALL.h/TALL.w),name='baby-wallpaper.png';draw(c,TALL);
   render();outShown=c.toDataURL('image/png');phone();$('.zoom').previousSibling.scrollIntoView({block:'start'});
   const blob=new Blob([Uint8Array.from(atob(outShown.split(',')[1]),x=>x.charCodeAt(0))],{type:'image/png'});
   if(!window.claude){ // 휴대폰에서는 공유 창(이미지 저장)을 먼저 쓴다
@@ -292,7 +286,7 @@ async function save(){
 }
 function phone(){
   const li=(...k)=>el('li',{},...k),ios=os==='ios';
-  const show=el('div',{},el('button',{type:'button',className:'main',textContent:'완성! 크게 보기',onclick:()=>{if(!ask())return;S.done=1;store('design',S);view()}}));
+  const show=el('div',{},el('button',{type:'button',className:'main',textContent:'완성! 크게 보기',onclick:()=>{S.done=1;store('design',S);view()}}));
   const kids=[];
   if(alone)kids.push(el('h2',{textContent:'다 꾸몄나요?'}),el('p',{textContent:'다음부터는 아이콘을 누르면 꾸민 방과 오늘의 D-day, 시계가 바로 나와요.'}),show);
   else{
@@ -304,7 +298,7 @@ function phone(){
       el('ol',{},...(ios?[li('사파리 아래쪽 공유 버튼(네모에 위 화살표) → 홈 화면에 추가')]:install?[]:[li('크롬 오른쪽 위 ⋮ → 홈 화면에 추가')]),li('생긴 아이콘을 열어 꾸미고 ‘완성! 크게 보기’')));
     kids.push(show);
   }
-  kids.push(el('h3',{textContent:'늘 보이는 배경화면'}),el('p',{className:'hint',textContent:'위쪽에 휴대폰 시계가 그대로 나오고, 만나는 날짜가 그림에 들어가요.'}),el('div',{},el('button',{type:'button',className:'main',textContent:'배경화면 저장',onclick:save})));
+  kids.push(el('h3',{textContent:'늘 보이는 배경화면'}),el('p',{className:'hint',textContent:'지금 보이는 그림 그대로 저장돼요. 시계는 휴대폰 시계가 나와요.'}),el('div',{},el('button',{type:'button',className:'main',textContent:'배경화면 저장',onclick:save})));
   if(outShown)kids.push(el('p',{},el('strong',{textContent:'저장 창이 안 뜨면 그림을 길게 눌러 사진에 저장하세요.'})),el('button',{type:'button',className:'zoom','aria-label':'그림 크게 보기',onclick:()=>{$('#full').hidden=false;$('#full img').src=outShown}},el('img',{className:'out',src:outShown,alt:'저장할 그림'})),el('p',{},'그래도 안 되면 그림을 한 번 눌러 크게 띄우고 화면을 캡처하세요.'));
   kids.push(el('p',{},ios?'사진 앱에서 그림을 열고 공유 → 배경화면으로 지정':'갤러리에서 그림을 열고 ⋮ → 배경화면으로 설정'));
   $('#phone').replaceChildren(...kids);
@@ -321,7 +315,7 @@ function phone(){
   note('꾸민 내용은 이 휴대폰에만 저장돼요');
   $('#cols').inert=false;tabs();panel();phone();render();
   if(alone&&S.done)view();
-  setInterval(()=>S.info!=='none'&&!drag&&tick(),5000);
+  setInterval(()=>!drag&&tick(),5000);
 })();
 </script>
 </body></html>
