@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="아기를 기다리는 방을 꾸며 휴대폰 배경화면으로 저장하세요"><meta property="og:title" content="아기 기다리는 방"><meta property="og:description" content="옷, 트리, 소품을 바꿔 꾸미고 휴대폰 배경화면으로 저장하세요"><meta name="apple-mobile-web-app-title" content="아기 방"><meta name="theme-color" content="#fbe9ee"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-192.png"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style><title>아기 기다리는 방</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="아기를 기다리는 방을 꾸며 휴대폰 배경화면으로 저장하세요"><meta property="og:title" content="아기 기다리는 방"><meta property="og:description" content="옷, 트리, 소품을 바꿔 꾸미고 휴대폰 배경화면으로 저장하세요"><meta property="og:type" content="website"><meta property="og:url" content="https://tjehdgyxps-spec.github.io/baby-room/"><meta property="og:image" content="https://tjehdgyxps-spec.github.io/baby-room/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="apple-mobile-web-app-title" content="아기 방"><meta name="theme-color" content="#fbe9ee"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-192.png"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style><title>아기 기다리는 방</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Jua&display=swap">
 <style>
@@ -32,6 +32,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 label{display:grid;gap:4px;font-size:13px;color:var(--soft);flex:1 1 150px;min-width:0}
 input[type=text],input[type=date]{font:inherit;font-size:16px;color:var(--ink);background:var(--tint);border:2px solid var(--line);border-radius:4px;padding:8px 10px;width:100%;min-width:0;max-width:100%;min-height:44px}
 input[type=date]{-webkit-appearance:none;appearance:none;display:block;text-align:left}input::-webkit-date-and-time-value{text-align:left}
+input[type=color]{width:100%;height:44px;padding:4px;border:2px solid var(--line);border-radius:4px;background:var(--tint)}
 input[type=range]{width:100%;accent-color:var(--accent)}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .main{border:2px solid var(--accent);background:var(--accent);color:var(--on-accent);border-radius:4px;padding:9px 16px;font-weight:600;min-height:44px}
@@ -86,7 +87,7 @@ const SLOTS=[
 {id:'hair',label:'머리 색',region:'m_hair',ref:92,opts:[orig('m_hair'),tint('choco','초코','#8a5638'),tint('brown','밝은 갈색','#b88152'),tint('blond','금발','#ecc983'),tint('pink','분홍','#e995a8'),tint('ash','애쉬','#a5a2b5'),tint('black','검정','#3a3638')]},
 {id:'hat',label:'머리 장식',a:[702,520],v:1,m:170,opts:[none(),sp('santa','산타 모자'),sp('antler','루돌프 뿔',{dy:-12}),sp('beret','베레모',{dy:-6}),sp('flowers','꽃 머리띠',{dy:8}),sp('crown','왕관',{s:.7,dy:-38}),sp('hbowpink','분홍 리본',{dx:-70,dy:30,s:.85}),sp('hbowred','빨간 리본',{dx:-70,dy:30,s:.85})],mine:1},
 {id:'shirt',label:'윗옷',region:'m_shirt',ref:248,opts:[orig('m_shirt'),...COL,...PAT],mine:1},
-{id:'print',label:'옷 그림',a:[693,748],v:.5,m:84,opts:[sp('kitty','고양이',{s:.75,dy:-8}),sp('heart','하트',{s:.7,dy:-10}),sp('star','별',{s:.6}),sp('bear','곰돌이',{s:.5}),sp('bunny','토끼',{s:.5}),sp('ginger','진저맨',{s:.9}),none()],mine:1},
+{id:'print',label:'옷 그림',a:[693,748],v:.5,m:84,opts:[sp('kitty','고양이',{s:.58,dy:-18}),sp('heart','하트',{s:.7,dy:-10}),sp('star','별',{s:.6}),sp('bear','곰돌이',{s:.5}),sp('bunny','토끼',{s:.5}),sp('ginger','진저맨',{s:.9}),none()],mine:1},
 {id:'pants',label:'바지',region:'m_pants',ref:205,opts:[orig('m_pants'),...COL.slice(1),tint('white','하양','#fbf8f4'),...PAT],mine:1},
 {id:'shoes',label:'신발',region:'m_shoes',ref:240,opts:[orig('m_shoes'),...COL],mine:1},
 {id:'floor',label:'바닥 인형',a:[906,998],v:1,m:210,opts:[sp('babyface','아기 얼굴 쿠션',{s:1.05}),...DOLL.map(o=>({...o,s:1.25})),sp('snowman','눈사람',{s:1.15}),...GIFT.map(o=>({...o,s:1.25})),sp('cake','케이크',{s:1.3}),none()],mine:1}];
@@ -223,8 +224,10 @@ function draw(c,win){
   part('b2',()=>bubble(g,940,404,94,S.b2,[868,902,862],50));
   if(S.due){put(g,meetText(S.due),...(tall?[505,2085,78]:[612,205,84]));if(!tall)boxes.push({id:'info',x:250,y:150,w:720,h:110})}
 }
-const ink=()=>dark()?'#fff3d6':'#c93445';
-function put(g,t,x,y,z){g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';g.font=`400 ${z}px "Jua","IBM Plex Sans KR","Malgun Gothic",sans-serif`;g.strokeStyle=dark()?'#232846':'#fff';g.lineWidth=z/5;g.strokeText(t,x,y);g.fillStyle=ink();g.fillText(t,x,y)}
+const ink=()=>S.ink||(dark()?'#fff3d6':'#c93445');
+// 글자색이 밝으면 어두운 테두리, 어두우면 흰 테두리로 어느 배경에서나 읽히게 한다
+const edge=c=>{const[a,b,d]=[1,3,5].map(i=>parseInt(c.substr(i,2),16));return a*.3+b*.59+d*.11>165?'#3a2824':'#fff'};
+function put(g,t,x,y,z){g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';g.font=`400 ${z}px "Jua","IBM Plex Sans KR","Malgun Gothic",sans-serif`;g.strokeStyle=edge(ink());g.lineWidth=z/5;g.strokeText(t,x,y);g.fillStyle=ink();g.fillText(t,x,y)}
 let queued=0;const render=()=>{if(!queued)queued=requestAnimationFrame(()=>{queued=0;draw($('#c'),SQUARE);const b=[...boxes].reverse().find(b=>b.id===sel);if(b&&!['tree','info','bubble'].includes(sel)){const g=$('#c').getContext('2d');g.setLineDash([10,8]);g.lineWidth=3;g.strokeStyle='#c93445';g.strokeRect(b.x-5,b.y-5,b.w+10,b.h+10);g.setLineDash([])}})};
 
 /* ---------- 저장 ---------- */
@@ -266,6 +269,9 @@ function panel(){
   const s=slot(sel),P=$('#panel'),kids=[el('h2',{textContent:s.label})];
   if(sel==='info'){
     kids.push(field('아기 만나는 날',el('input',{id:'due',type:'date',value:S.due,onchange:e=>{S.due=e.target.value;changed()}})),el('p',{className:'hint',textContent:'날짜를 비우면 글자가 안 나와요.'}));
+    const setInk=c=>{S.ink=c;changed();panel()},INKS=[['','자동'],['#c93445','빨강'],['#ee7f9a','분홍'],['#ffffff','하양'],['#3a2824','갈색'],['#f2b63c','노랑'],['#4f7d4a','초록'],['#3f6fae','파랑'],['#7d62b3','보라']];
+    kids.push(el('h3',{textContent:'글자색'}),el('div',{className:'grid'},...INKS.map(([c,t])=>{const w=el('span',{className:'sw'});w.style.background=c||'linear-gradient(135deg,#c93445 50%,#fff3d6 50%)';return el('button',{type:'button','aria-pressed':String((S.ink||'')===c),onclick:()=>setInk(c)},w,el('span',{textContent:t}))})),
+      field('원하는 색 직접 고르기',el('input',{id:'ink',type:'color',value:ink(),oninput:e=>{S.ink=e.target.value;changed()}})));
   }else if(sel==='bubble'){
     for(const[k,l]of[['b1','엄마 말풍선'],['b2','인형 말풍선']])kids.push(field(l,el('input',{id:k,type:'text',maxLength:k==='b1'?14:7,value:S[k],oninput:e=>{S[k]=e.target.value;changed()}})));
     kids.push(el('p',{className:'hint',textContent:(PUB?'태명으로 바꿔 보세요. ':'')+'비워 두면 말풍선이 사라져요.'}));
